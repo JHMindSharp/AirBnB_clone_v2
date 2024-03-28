@@ -113,38 +113,43 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """Create an object of any class with given parameters"""
-        arguments = args.split()
-        if not arguments:
-            print("** class name missing **")
-            return
-        if arguments[0] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
+def do_create(self, arg):
+    """Create a new instance of a class"""
+    if not arg:
+        print("** class name missing **")
+        return
+    args = arg.split()
+    class_name = args[0]
+    if class_name not in classes:
+        print("** class doesn't exist **")
+        return
+    kwargs = {}
+    for param in args[1:]:
+        key_value = param.split('=')
+        if len(key_value) != 2:
+            print("** invalid parameter syntax **")
+            continue
+        key = key_value[0]
+        value = key_value[1]
+        # Remove quotes from value if present
+        if value[0] == '"' and value[-1] == '"':
+            value = value[1:-1]
+            # Replace underscores with spaces
+            value = value.replace('_', ' ')
+        # Parse value types
+        if '.' in value:
+            try:
+                value = float(value)
+            except ValueError:
+                print("** invalid float value **")
+                continue
+        elif value.isdigit():
+            value = int(value)
+        kwargs[key] = value
+    new_instance = classes[class_name](**kwargs)
+    new_instance.save()
+    print(new_instance.id)
 
-        new_instance = HBNBCommand.classes[arguments[0]]()
-
-        for arg in arguments[1:]:
-            key, value = arg.split('=')
-            if value[0] == '"' and value[-1] == '"':
-                value = value[1:-1].replace('_', ' ')
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    continue
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    continue
-
-            if hasattr(new_instance, key):
-                setattr(new_instance, key, value)
-
-        new_instance.save()
-        print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
