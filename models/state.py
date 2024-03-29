@@ -1,13 +1,8 @@
 #!/usr/bin/python3
-"""Defines the State class."""
-import models
-from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
-from models.city import City
+""" State Module for HBNB project """
+from models.base_model import BaseModel
 
-class State(BaseModel, Base):
-    """Represents a state for a MySQL database."""
-    __tablename__ = 'states'
-    name = Column(String(128), nullable=False)
-    cities = relationship("City", backref="state", cascade="all, delete, delete-orphan")
+
+class State(BaseModel):
+    """ State class """
+    name = ""
