@@ -15,7 +15,7 @@ class DBStorage:
         pwd = getenv('HBNB_MYSQL_PWD')
         host = getenv('HBNB_MYSQL_HOST')
         db = getenv('HBNB_MYSQL_DB')
-        self.__engine = create_engine(f'mysql+mysqldb://{user}:{pwd}@{host}/{db}')
+        self.__engine = create_engine(f'mysql+mysqldb://{user}:{pwd}@{host}/{db}', pool_pre_ping=True)
 
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
@@ -29,6 +29,10 @@ class DBStorage:
                 key = f"{obj.__class__.__name__}.{obj.id}"
                 all_objs[key] = obj
         else:
+            # Importez et ajoutez tous les modèles que vous avez l'intention d'utiliser
+            from models.state import State
+            from models.city import City
+            # Ajoutez d'autres classes au besoin
             classes = [State, City]
             for cls in classes:
                 objs = self.__session.query(cls).all()
@@ -52,8 +56,6 @@ class DBStorage:
 
     def reload(self):
         """Create all tables in the database and create the database session"""
-        from models.state import State
-        from models.city import City
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
         self.__session = scoped_session(session_factory)
