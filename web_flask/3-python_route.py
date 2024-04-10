@@ -4,8 +4,11 @@ The application listens on 0.0.0.0, port 5000.
 Routes:
 /: Displays 'Hello HBNB!'
 /hbnb: Displays 'HBNB'
-/c/<text>: Displays 'C ' followed by the value of the text variable (replace underscore _ symbols with a space).
-/python/(<text>): Displays 'Python ', followed by the value of the text variable (replace underscore _ symbols with a space). The default value of text is “is cool”.
+/c/<text>: Displays 'C ' followed by the value of the text variable
+(replace underscore _ symbols with a space).
+/python/(<text>): Displays 'Python ', followed by the value of the text
+variable (replace underscore _ symbols with a space).
+The default value of text is “is cool”.
 """
 
 from flask import Flask
