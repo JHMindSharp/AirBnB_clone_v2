@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from os import getenv
 
+
 class DBStorage:
     __engine = None
     __session = None
@@ -15,13 +16,16 @@ class DBStorage:
         pwd = getenv('HBNB_MYSQL_PWD')
         host = getenv('HBNB_MYSQL_HOST')
         db = getenv('HBNB_MYSQL_DB')
-        self.__engine = create_engine(f'mysql+mysqldb://{user}:{pwd}@{host}/{db}', pool_pre_ping=True)
+        self.__engine = create_engine(
+            f'mysql+mysqldb://{user}:{pwd}@{host}/{db}',
+            pool_pre_ping=True
+        )
 
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
-  
+
     def all(self, cls=None):
-        """Query on the current database session all objects depending of the class name"""
+        """Query all objects depending of the class name"""
         all_objs = {}
         if cls:
             objs = self.__session.query(cls).all()
@@ -29,10 +33,8 @@ class DBStorage:
                 key = f"{obj.__class__.__name__}.{obj.id}"
                 all_objs[key] = obj
         else:
-            # Importez et ajoutez tous les modèles que vous avez l'intention d'utiliser
             from models.state import State
             from models.city import City
-            # Ajoutez d'autres classes au besoin
             classes = [State, City]
             for cls in classes:
                 objs = self.__session.query(cls).all()
@@ -50,12 +52,18 @@ class DBStorage:
         self.__session.commit()
 
     def delete(self, obj=None):
-        """Delete from the current database session obj if not None"""
+        """Delete obj from the current database session if not None"""
         if obj:
             self.__session.delete(obj)
 
     def reload(self):
-        """Create all tables in the database and create the database session"""
+        """Create tables and the database session"""
         Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        session_factory = sessionmaker(
+            bind=self.__engine, expire_on_commit=False
+        )
         self.__session = scoped_session(session_factory)
+
+    def close(self):
+        """Remove the current session"""
+        self.__session.remove()
