@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from models.amenity import Amenity
 
 
-class Place(BaseModel):
+class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
 
