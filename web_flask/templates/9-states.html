@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>States</title>
+</head>
+<body>
+    {% if id is not None %}
+        {% set state = states[id] %}
+        {% if state %}
+            <h1>State: {{ state.name }}</h1>
+            <ul>
+                {% for city in state.cities %}
+                    <li>{{ city.name }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <h1>Not found!</h1>
+        {% endif %}
+    {% else %}
+        <h1>States</h1>
+        <ul>
+            {% for state in states.values() %}
+                <li>{{ state.name }}
+                    <ul>
+                        {% for city in state.cities %}
+                            <li>{{ city.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
