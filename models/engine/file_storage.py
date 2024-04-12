@@ -1,13 +1,6 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
-from models.base_model import BaseModel
-from models.user import User
-from models.place import Place
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.review import Review
 
 
 class FileStorage:
@@ -16,17 +9,17 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage
-        If cls is provided, returns a dictionary of all objects of that type.
+        """Returns a dictionary of models currently in storage.
+        If cls is provided, returns only items of that class type.
         """
         if cls is None:
             return FileStorage.__objects
         else:
-            cls_objects = {}
+            filtered_objects = {}
             for key, value in FileStorage.__objects.items():
                 if isinstance(value, cls):
-                    cls_objects[key] = value
-            return cls_objects
+                    filtered_objects[key] = value
+            return filtered_objects
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -41,21 +34,23 @@ class FileStorage:
                 temp[key] = val.to_dict()
             json.dump(temp, f)
 
-    def delete(self, obj=None):
-        """Delete obj from __objects if it’s inside"""
-        if obj is not None:
-            key = "{}.{}".format(type(obj).__name__, obj.id)
-            if key in FileStorage.__objects:
-                del FileStorage.__objects[key]
-
     def reload(self):
         """Loads storage dictionary from file"""
+        from models.base_model import BaseModel
+        from models.user import User
+        from models.place import Place
+        from models.state import State
+        from models.city import City
+        from models.amenity import Amenity
+        from models.review import Review
+
         classes = {
                     'BaseModel': BaseModel, 'User': User, 'Place': Place,
                     'State': State, 'City': City, 'Amenity': Amenity,
                     'Review': Review
                   }
         try:
+            temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
@@ -63,6 +58,15 @@ class FileStorage:
         except FileNotFoundError:
             pass
 
+    def delete(self, obj=None):
+        """Deletes obj from __objects if it’s inside."""
+        if obj is None or obj not in FileStorage.__objects.values():
+            return
+        keys_to_remove = [key for key, value in FileStorage.__objects.items()
+                          if value == obj]
+        for key in keys_to_remove:
+            del FileStorage.__objects[key]
+
     def close(self):
-        """Calls reload() for deserializing the JSON file to objects."""
+        """deserializing the JSON file to objects"""
         self.reload()

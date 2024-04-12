@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] =='}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -113,32 +113,51 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, arg):
-        args = arg.split()
-        if not args:
+    def do_create(self, args):
+        """Create an object of any class with given parameters."""
+        # Split the argument string into individual components
+        args_list = args.split()
+
+        if not args_list:
             print("** class name missing **")
             return
-        if args[0] not in HBNBCommand.classes:
+
+        class_name = args_list[0]
+
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args[0]]()
-        for param in args[1:]:
-            key, value = param.split("=")
-            if value[0] == '"' and value[-1] == '"':
-                value = value.strip('"').replace('_', ' ')
-            elif '.' in value:
-                try:
-                    value = float(value)
-                except ValueError:
-                    continue
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    continue
-            setattr(new_instance, key, value)
-        new_instance.save()
+
+        new_instance = HBNBCommand.classes[class_name]()
+
+        # Iterate over the attribute key-value pairs
+        for arg in args_list[1:]:
+            # Split each argument into key and value
+            key_value = arg.split('=')
+            # Ensure there is a key and a value
+            if len(key_value) == 2:
+                key, value = key_value
+                # Replace underscores with spaces for string values
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1].replace('_', ' ').replace('\\', '"')
+                # Convert to float if value contains a dot
+                elif '.' in value:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass  # Skip invalid floats
+                # Convert to int if possible
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass  # Skip invalid ints
+                # Set the attribute on the instance
+                setattr(new_instance, key, value)
+
+        new_instance.save()  # Save the instance to storage
         print(new_instance.id)
+        storage.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -201,7 +220,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")
@@ -211,14 +230,23 @@ class HBNBCommand(cmd.Cmd):
         print("Destroys an individual instance of a class")
         print("[Usage]: destroy <className> <objectId>\n")
 
-    def do_all(self, arg):
-        """Shows all objects, or all objects of a class"""
-        all_objs = storage.all()
-        if arg:
-            arg = arg.split(' ')[0]
-            all_objs = {k: v for k, v in all_objs.items() if k.startswith(arg)}
-        for obj in all_objs.values():
-            print(obj)
+    def do_all(self, args):
+        """ Shows all objects, or all objects of a class"""
+        print_list = []
+
+        if args:
+            args = args.split(' ')[0]  # remove possible trailing args
+            if args not in HBNBCommand.classes:
+                print("** class doesn't exist **")
+                return
+            objects = storage.all(HBNBCommand.classes[args])
+        else:
+            objects = storage.all()
+
+        for obj in objects.values():
+            print_list.append(str(obj))
+
+        print(print_list)
 
     def help_all(self):
         """ Help information for the all command """
@@ -324,6 +352,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
