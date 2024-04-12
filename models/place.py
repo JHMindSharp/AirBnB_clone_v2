@@ -5,10 +5,14 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
 from sqlalchemy.orm import relationship
 from os import getenv
 
-# Définition de la table d'association pour la relation many-to-many entre Place et Amenity
+
 place_amenity = Table('place_amenity', Base.metadata,
-                      Column('place_id', String(60), ForeignKey('places.id'), primary_key=True, nullable=False),
-                      Column('amenity_id', String(60), ForeignKey('amenities.id'), primary_key=True, nullable=False))
+                      Column('place_id', String(60), ForeignKey('places.id'),
+                             primary_key=True, nullable=False),
+                      Column('amenity_id', String(60),
+                             ForeignKey('amenities.id'),
+                             primary_key=True, nullable=False))
+
 
 class Place(BaseModel, Base):
     __tablename__ = 'places'
@@ -23,15 +27,15 @@ class Place(BaseModel, Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
 
-    # Relation avec User configurée pour correspondre aux relations réciproques
     user = relationship("User", back_populates="places")
 
     if getenv('HBNB_TYPE_STORAGE') == 'db':
-        # Relations configurées pour un environnement de base de données
-        reviews = relationship("Review", backref="place", cascade="all, delete-orphan")
-        amenities = relationship("Amenity", secondary=place_amenity, back_populates="places")
+        reviews = relationship("Review",
+                               backref="place", cascade="all, delete-orphan")
+        amenities = relationship("Amenity",
+                                 secondary=place_amenity,
+                                 back_populates="places")
     else:
-        # Méthodes pour gérer les relations en mode fichier (sans base de données)
         @property
         def reviews(self):
             """
